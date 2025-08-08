@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Navbar } from "../components/navbar";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import LenisProvider from "@/components/lenisProvider";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -11,6 +12,9 @@ const videoFiles = ["/first.mp4", "/second.mp4"];
 export default function Home() {
   const [current, setCurrent] = useState(0);
   const [mounted, setMounted] = useState(false);
+
+  const mapImgRef = useRef<HTMLImageElement | null>(null);
+  const LAND_COLOR = "#ffffff"; // set the land color to reveal while zooming
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const textRef = useRef<HTMLHeadingElement | null>(null);
@@ -23,8 +27,8 @@ export default function Home() {
 
   const awardsMapWrapper = useRef<HTMLDivElement | null>(null);
   const awardsInner = useRef<HTMLDivElement | null>(null);
-  const mapInner = useRef<HTMLDivElement | null>(null); 
-  const mapContentRef = useRef<HTMLDivElement | null>(null); 
+  const mapInner = useRef<HTMLDivElement | null>(null);
+  const mapContentRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -143,83 +147,131 @@ export default function Home() {
   }, [mounted]);
 
   useEffect(() => {
-    if (!mounted) return;
-    if (!awardsMapWrapper.current || !awardsInner.current || !mapInner.current || !mapContentRef.current) return;
+  if (!mounted) return;
+  if (
+    !awardsMapWrapper.current ||
+    !awardsInner.current ||
+    !mapInner.current ||
+    !mapContentRef.current ||
+    !mapImgRef.current
+  )
+    return;
 
-    const awardsDur = 2.5; 
-    const mapDur = 2.5; 
-    const totalDur = awardsDur + mapDur;
-    const mapContentThreshold = 0.3; 
+  const finalZoom = 10;
+  const awardsDur = 0.3;
+  const mapFadeInDur = 0.5;
+  const totalDur = awardsDur + mapFadeInDur;
+  const zoomtime = 4;
+  const scrollEnd = "+=500%";
+  const contentFadeInDur = 0.8;
+  const contentHold = 1.5;
+  const contentFadeOutDur = 0.8;
+  const mapStartOffset = awardsDur;
+  const mapContentStart = mapStartOffset + 0.7;
 
-    gsap.set(mapInner.current, { opacity: 0, pointerEvents: "none" });
-    gsap.set(mapContentRef.current, { opacity: 0, pointerEvents: "none" });
-    gsap.set(awardsInner.current, { opacity: 1, pointerEvents: "auto" });
+  gsap.set(mapInner.current, {
+    opacity: 0,
+    pointerEvents: "none",
+    backgroundColor: LAND_COLOR,
+  });
 
-    const mapStartOffset = awardsDur;
-    const mapContentStart = mapStartOffset + mapDur * mapContentThreshold;
-    const mapContentDur = mapDur * (1 - mapContentThreshold);
+  try {
+    mapImgRef.current.style.willChange = "transform";
+  } catch {}
 
-    const scrollDistancePercent = totalDur * 80; 
+  gsap.set(mapImgRef.current, { scale: 1, transformOrigin: "50% 50%" });
+  gsap.set(mapContentRef.current, { opacity: 0, pointerEvents: "none" });
+  gsap.set(awardsInner.current, { opacity: 1, pointerEvents: "auto" });
 
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: awardsMapWrapper.current,
-        start: "top top",
-        end: `+=${scrollDistancePercent}%`,
-        scrub: true,
-        pin: true,
+  const tl = gsap.timeline({
+    scrollTrigger: {
+      trigger: awardsMapWrapper.current,
+      start: "top top",
+      end: scrollEnd,
+      scrub: true,
+      pin: true,
+    },
+  });
+
+  tl.to(
+    awardsInner.current!,
+    {
+      opacity: 0,
+      duration: awardsDur,
+      ease: "power1.out",
+      onComplete: () => {
+        if (awardsInner.current) awardsInner.current.style.pointerEvents = "none";
       },
-    });
+    },
+    0
+  );
 
-    tl.to(
-      awardsInner.current!,
-      {
-        opacity: 0,
-        duration: awardsDur,
-        ease: "power1.out",
-        onComplete: () => {
-          if (awardsInner.current) awardsInner.current.style.pointerEvents = "none";
-        },
+  tl.to(
+    mapInner.current!,
+    {
+      opacity: 1,
+      duration: mapFadeInDur,
+      ease: "power1.out",
+      onStart: () => {
+        if (mapInner.current) mapInner.current.style.pointerEvents = "auto";
       },
-      0
-    );
+    },
+    mapStartOffset
+  );
 
-    tl.to(
-      mapInner.current!,
-      {
-        opacity: 1,
-        duration: mapDur,
-        ease: "power1.out",
-        onStart: () => {
-          if (mapInner.current) mapInner.current.style.pointerEvents = "none";
-        },
-        onComplete: () => {
-          if (mapInner.current) mapInner.current.style.pointerEvents = "auto";
-        },
+  tl.to(
+    mapImgRef.current!,
+    {
+      scale: finalZoom,
+      duration: mapFadeInDur,
+      ease: "power2.out",
+      transformOrigin: "50% 50%",
+    },
+    mapStartOffset
+  );
+
+  tl.to(
+    mapContentRef.current!,
+    {
+      opacity: 1,
+      duration: contentFadeInDur,
+      ease: "power1.out",
+      onStart: () => {
+        if (mapContentRef.current) mapContentRef.current.style.pointerEvents = "auto";
       },
-      mapStartOffset
-    );
+    },
+    mapContentStart
+  );
 
-    tl.to(
-      mapContentRef.current!,
-      {
-        opacity: 1,
-        duration: mapContentDur,
-        ease: "none", 
-        onStart: () => {
-          if (mapContentRef.current) mapContentRef.current.style.pointerEvents = "auto";
-        },
+  tl.to(
+    mapContentRef.current!,
+    {
+      opacity: 0,
+      duration: contentFadeOutDur,
+      ease: "power1.in",
+      onComplete: () => {
+        if (mapContentRef.current) mapContentRef.current.style.pointerEvents = "none";
       },
-      mapContentStart
-    );
+    },
+    mapContentStart + contentFadeInDur + contentHold
+  );
 
-    return () => {
-      try {
-        tl.scrollTrigger?.kill();
-      } catch {}
-      tl.kill();
-    };
-  }, [mounted]);
+  tl.eventCallback("onComplete", () => {
+    try {
+      if (mapImgRef.current) mapImgRef.current.style.willChange = "";
+    } catch {}
+  });
+
+  return () => {
+    try {
+      tl.scrollTrigger?.kill();
+    } catch {}
+    tl.kill();
+    try {
+      if (mapImgRef.current) mapImgRef.current.style.willChange = "";
+    } catch {}
+  };
+}, [mounted]);
 
   const handleEnded = () => {
     setCurrent((prev) => (prev + 1) % videoFiles.length);
@@ -227,286 +279,292 @@ export default function Home() {
 
   return (
     <>
-      <Navbar />
-
-      <section
-        ref={heroref}
-        className="relative min-h-screen w-full overflow-x-hidden overflow-y-hidden z-0"
-      >
-        <div ref={videoContainerRef} className="absolute inset-0 w-full h-full">
-          {mounted && (
-            <video
-              key={videoFiles[current]}
-              ref={videoRef}
-              src={videoFiles[current]}
-              autoPlay
-              muted
-              loop={false}
-              onEnded={handleEnded}
-              className="w-full h-full object-cover"
-              playsInline
-            />
-          )}
-        </div>
-
-        <div
-          className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none"
-          style={{ transition: "background 0.2s" }}
+      <LenisProvider options={{ duration: 1.5, smooth: true }}>
+        <Navbar />
+        <section
+          ref={heroref}
+          className="relative min-h-screen w-full overflow-x-hidden overflow-y-hidden z-0"
         >
-          <h1
-            ref={textRef}
-            className="text-white font-extrabold text-6xl sm:text-7xl md:text-8xl lg:text-9xl drop-shadow-xl select-none"
-            style={{ letterSpacing: "0.05em", willChange: "transform" }}
+          <div
+            ref={videoContainerRef}
+            className="absolute inset-0 w-full h-full"
           >
-            Ritzy Group
-          </h1>
-        </div>
-
-        <div
-          ref={contentRef}
-          className="absolute inset-0 flex items-center justify-center z-20 overflow-hidden"
-          style={{
-            backgroundColor: "white",
-            opacity: 0,
-          }}
-        >
-          <div ref={floatingElementsRef} className="absolute inset-0">
-            <div className="absolute top-20 left-20 w-32 h-32 border-2 border-blue-200 rounded-full opacity-40"></div>
-            <div className="absolute bottom-32 right-32 w-24 h-24 border-2 border-purple-200 rounded-full opacity-50"></div>
-            <div className="absolute top-1/2 right-20 w-16 h-16 border-2 border-pink-200 rounded-full opacity-60"></div>
-            <div className="absolute top-32 right-1/4 w-8 h-8 bg-gradient-to-r from-blue-400 to-blue-500 rotate-45 opacity-20 rounded-sm shadow-lg"></div>
-            <div className="absolute bottom-40 left-1/3 w-6 h-6 bg-gradient-to-r from-purple-400 to-purple-500 rotate-45 opacity-25 rounded-sm shadow-lg"></div>
-            <div className="absolute top-1/3 left-1/4 w-10 h-10 bg-gradient-to-r from-pink-400 to-pink-500 rotate-45 opacity-15 rounded-sm shadow-lg"></div>
-            <div className="absolute bottom-1/4 right-1/3 w-7 h-7 bg-gradient-to-r from-cyan-400 to-cyan-500 rotate-45 opacity-30 rounded-sm shadow-lg"></div>
-            <div className="absolute top-1/4 left-1/2 w-3 h-3 bg-blue-400 rounded-full opacity-40 shadow-md"></div>
-            <div className="absolute top-3/4 left-1/5 w-4 h-4 bg-purple-400 rounded-full opacity-35 shadow-md"></div>
-            <div className="absolute top-1/2 right-1/3 w-2 h-2 bg-pink-400 rounded-full opacity-50 shadow-md"></div>
-            <div className="absolute bottom-1/3 left-2/3 w-5 h-5 bg-cyan-400 rounded-full opacity-25 shadow-md"></div>
-          </div>
-
-          <div className="max-w-5xl mx-auto px-2 sm:px-8 md:px-16 text-center relative z-10">
-            <h2 className="text-4xl md:text-5xl font-extrabold mb-8 leading-tight relative">
-              <span className="text-black bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600">
-                What is Ritzy Group?
-              </span>
-              <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 rounded-full opacity-60"></div>
-            </h2>
-
-            <div className="space-y-6">
-              <p className="text-xl md:text-2xl text-gray-700 leading-relaxed font-medium">
-                Ritzy Group is a leading apparel manufacturer from Bangladesh,
-                trusted by global brands for delivering premium knitwear with
-                consistency and care. Since 2005, we've built our reputation on
-                quality craftsmanship, ethical production, and a deep commitment
-                to innovation.
-              </p>
-              <p className="text-xl md:text-2xl text-gray-700 leading-relaxed font-medium">
-                Our products are crafted in four modern factories by over 8,000
-                personnel, each piece reflecting our dedication to excellence.
-                At Ritzy, we don't just manufacture garments, we shape
-                experiences, support livelihoods, and power the global fashion
-                supply chain.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ---------- AWARDS + MAP CROSSFADE ---------- */}
-      <section ref={awardsMapWrapper} className="relative w-full bg-white">
-        {/* awardsInner is the content that will fade out (keeps layout) */}
-        <div
-          ref={awardsInner}
-          className="w-full min-h-[100vh] flex flex-col items-center justify-center relative overflow-hidden py-12 z-10"
-        >
-          <div ref={awardsFloatingRef} className="absolute inset-0">
-            <div className="absolute top-20 left-20 w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 opacity-20 rotate-45 rounded-sm"></div>
-            <div className="absolute top-40 right-32 w-6 h-6 bg-gradient-to-r from-pink-500 to-red-500 opacity-25 rounded-full"></div>
-            <div className="absolute bottom-32 left-1/4 w-10 h-10 bg-gradient-to-r from-cyan-500 to-blue-500 opacity-15 rotate-45 rounded-sm"></div>
-            <div className="absolute top-1/3 right-1/5 w-7 h-7 bg-gradient-to-r from-purple-500 to-pink-500 opacity-20 rounded-full"></div>
-            <div className="absolute bottom-1/4 right-1/3 w-5 h-5 bg-gradient-to-r from-yellow-500 to-orange-500 opacity-30 rotate-45 rounded-sm"></div>
-            <div className="absolute top-3/4 left-1/6 w-9 h-9 bg-gradient-to-r from-green-500 to-blue-500 opacity-18 rounded-full"></div>
-            <div className="absolute top-1/4 left-1/2 w-4 h-4 bg-gradient-to-r from-indigo-500 to-purple-500 opacity-25 rotate-45 rounded-sm"></div>
-            <div className="absolute bottom-1/3 right-1/4 w-6 h-6 bg-gradient-to-r from-red-500 to-pink-500 opacity-22 rounded-full"></div>
-          </div>
-
-          <div className="relative z-20 max-w-6xl mx-auto px-6 text-center">
-            <h2
-              id="awards-header"
-              className="text-4xl md:text-5xl font-extrabold mb-4 text-black bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 tracking-tight"
-            >
-              AWARDS & CERTIFICATION
-            </h2>
-            <div
-              id="awards-underline"
-              className="w-24 h-1 bg-gradient-to-r from-blue-600 to-purple-600 mx-auto mb-6 rounded-full shadow-lg"
-              style={{ transformOrigin: "center" }}
-            ></div>
-            <p
-              id="awards-desc"
-              className="text-lg md:text-xl text-center max-w-4xl mb-12 text-gray-700 leading-relaxed font-medium"
-            >
-              For maintaining and following the international standard
-              production process and delivering the best quality products and
-              services, Ritzy Group has earned recognition from prestigious
-              national & international governing bodies.
-            </p>
-          </div>
-
-          <div className="w-full overflow-hidden relative z-20">
-            <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-white to-transparent z-30"></div>
-            <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-white to-transparent z-30"></div>
-            <div
-              className="flex items-center gap-12 animate-scroll-infinite py-8"
-              style={{ minWidth: "2400px" }}
-            >
-              <img
-                src="https://www.ritzygroupbd.com/storage/gallery/08-2019/accord_gallery_image_1565208699.jpeg"
-                alt="Award 1"
-                className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
+            {mounted && (
+              <video
+                key={videoFiles[current]}
+                ref={videoRef}
+                src={videoFiles[current]}
+                autoPlay
+                muted
+                loop={false}
+                onEnded={handleEnded}
+                className="w-full h-full object-cover"
+                playsInline
               />
-              <img
-                src="https://www.ritzygroupbd.com/storage/gallery/08-2019/alliance_gallery_image_1565208720.jpeg"
-                alt="Award 2"
-                className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
-              />
-              <img
-                src="https://www.ritzygroupbd.com/storage/gallery/08-2019/ctpat_gallery_image_1565208739.jpeg"
-                alt="Award 3"
-                className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
-              />
-              <img
-                src="https://www.ritzygroupbd.com/storage/gallery/08-2019/higg_index_gallery_image_1565208787.jpeg"
-                alt="Award 4"
-                className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
-              />
-              <img
-                src="https://www.ritzygroupbd.com/storage/gallery/08-2019/oeko-tex_gallery_image_1565208839.jpeg"
-                alt="Award 5"
-                className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
-              />
-              <img
-                src="https://www.ritzygroupbd.com/storage/gallery/08-2019/scan_gallery_image_1565208865.jpeg"
-                alt="Award 6"
-                className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
-              />
-              <img
-                src="https://www.ritzygroupbd.com/storage/gallery/08-2019/sedex_smeta_gallery_image_1565208886.jpeg"
-                alt="Award 7"
-                className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
-              />
-              <img
-                src="https://www.ritzygroupbd.com/storage/gallery/08-2019/wrap_certification_gallery_image_1565208911.jpeg"
-                alt="Award 8"
-                className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
-              />
-              {/* duplicate set */}
-              <img
-                src="https://www.ritzygroupbd.com/storage/gallery/08-2019/accord_gallery_image_1565208699.jpeg"
-                alt="Award 1"
-                className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
-              />
-              <img
-                src="https://www.ritzygroupbd.com/storage/gallery/08-2019/alliance_gallery_image_1565208720.jpeg"
-                alt="Award 2"
-                className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
-              />
-              <img
-                src="https://www.ritzygroupbd.com/storage/gallery/08-2019/ctpat_gallery_image_1565208739.jpeg"
-                alt="Award 3"
-                className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
-              />
-              <img
-                src="https://www.ritzygroupbd.com/storage/gallery/08-2019/higg_index_gallery_image_1565208787.jpeg"
-                alt="Award 4"
-                className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
-              />
-              <img
-                src="https://www.ritzygroupbd.com/storage/gallery/08-2019/oeko-tex_gallery_image_1565208839.jpeg"
-                alt="Award 5"
-                className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
-              />
-              <img
-                src="https://www.ritzygroupbd.com/storage/gallery/08-2019/scan_gallery_image_1565208865.jpeg"
-                alt="Award 6"
-                className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
-              />
-              <img
-                src="https://www.ritzygroupbd.com/storage/gallery/08-2019/sedex_smeta_gallery_image_1565208886.jpeg"
-                alt="Award 7"
-                className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
-              />
-              <img
-                src="https://www.ritzygroupbd.com/storage/gallery/08-2019/wrap_certification_gallery_image_1565208911.jpeg"
-                alt="Award 8"
-                className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div
-          ref={mapInner}
-          className="absolute inset-0 flex items-center justify-center z-0 pointer-events-none opacity-0"
-        >
-          <div className="absolute inset-0 z-0">
-            <img
-              src="/world.svg"
-              alt="World Map"
-              className="w-full h-full object-cover select-none pointer-events-none"
-              draggable={false}
-            />
+            )}
           </div>
 
           <div
-            ref={mapContentRef}
-            className="relative z-10 flex flex-col items-center justify-center px-4"
-            style={{ opacity: 0 }}
+            className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none"
+            style={{ transition: "background 0.2s" }}
           >
-            <h2 className="text-3xl md:text-5xl font-extrabold text-center mb-4 text-black drop-shadow-lg">
-              Our Reach, Your Convenience
-            </h2>
-            <p className="text-base md:text-xl text-center max-w-2xl mb-8 text-gray-700 font-medium">
-              Wherever you are, our trusted services are never far away. With a
-              growing network of trained professionals across major cities and
-              local zones, we bring expert support right to your doorstep.
-            </p>
-            <button className="relative group text-lg md:text-xl font-semibold text-black flex items-center focus:outline-none bg-transparent border-none">
-              Explore our services
-              <span className="ml-2 text-2xl transition-transform group-hover:translate-x-1">
-                &#8594;
-              </span>
-            </button>
+            <h1
+              ref={textRef}
+              className="text-white font-extrabold text-6xl sm:text-7xl md:text-8xl lg:text-9xl drop-shadow-xl select-none"
+              style={{ letterSpacing: "0.05em", willChange: "transform" }}
+            >
+              Ritzy Group
+            </h1>
           </div>
-        </div>
-      </section>
 
-      <style jsx>{`
-        @keyframes scroll-infinite {
-          0% {
-            transform: translateX(0);
+          <div
+            ref={contentRef}
+            className="absolute inset-0 flex items-center justify-center z-20 overflow-hidden"
+            style={{
+              backgroundColor: "white",
+              opacity: 0,
+            }}
+          >
+            <div ref={floatingElementsRef} className="absolute inset-0">
+              <div className="absolute top-20 left-20 w-32 h-32 border-2 border-blue-200 rounded-full opacity-40"></div>
+              <div className="absolute bottom-32 right-32 w-24 h-24 border-2 border-purple-200 rounded-full opacity-50"></div>
+              <div className="absolute top-1/2 right-20 w-16 h-16 border-2 border-pink-200 rounded-full opacity-60"></div>
+              <div className="absolute top-32 right-1/4 w-8 h-8 bg-gradient-to-r from-blue-400 to-blue-500 rotate-45 opacity-20 rounded-sm shadow-lg"></div>
+              <div className="absolute bottom-40 left-1/3 w-6 h-6 bg-gradient-to-r from-purple-400 to-purple-500 rotate-45 opacity-25 rounded-sm shadow-lg"></div>
+              <div className="absolute top-1/3 left-1/4 w-10 h-10 bg-gradient-to-r from-pink-400 to-pink-500 rotate-45 opacity-15 rounded-sm shadow-lg"></div>
+              <div className="absolute bottom-1/4 right-1/3 w-7 h-7 bg-gradient-to-r from-cyan-400 to-cyan-500 rotate-45 opacity-30 rounded-sm shadow-lg"></div>
+              <div className="absolute top-1/4 left-1/2 w-3 h-3 bg-blue-400 rounded-full opacity-40 shadow-md"></div>
+              <div className="absolute top-3/4 left-1/5 w-4 h-4 bg-purple-400 rounded-full opacity-35 shadow-md"></div>
+              <div className="absolute top-1/2 right-1/3 w-2 h-2 bg-pink-400 rounded-full opacity-50 shadow-md"></div>
+              <div className="absolute bottom-1/3 left-2/3 w-5 h-5 bg-cyan-400 rounded-full opacity-25 shadow-md"></div>
+            </div>
+
+            <div className="max-w-5xl mx-auto px-2 sm:px-8 md:px-16 text-center relative z-10">
+              <h2 className="text-4xl md:text-5xl font-extrabold mb-8 leading-tight relative">
+                <span className="text-black bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600">
+                  What is Ritzy Group?
+                </span>
+                <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 rounded-full opacity-60"></div>
+              </h2>
+
+              <div className="space-y-6">
+                <p className="text-xl md:text-2xl text-gray-700 leading-relaxed font-medium">
+                  Ritzy Group is a leading apparel manufacturer from Bangladesh,
+                  trusted by global brands for delivering premium knitwear with
+                  consistency and care. Since 2005, we've built our reputation
+                  on quality craftsmanship, ethical production, and a deep
+                  commitment to innovation.
+                </p>
+                <p className="text-xl md:text-2xl text-gray-700 leading-relaxed font-medium">
+                  Our products are crafted in four modern factories by over
+                  8,000 personnel, each piece reflecting our dedication to
+                  excellence. At Ritzy, we don't just manufacture garments, we
+                  shape experiences, support livelihoods, and power the global
+                  fashion supply chain.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ---------- AWARDS + MAP CROSSFADE ---------- */}
+        <section ref={awardsMapWrapper} className="relative w-full bg-white">
+          {/* awardsInner is the content that will fade out (keeps layout) */}
+          <div
+            ref={awardsInner}
+            className="w-full min-h-[100vh] flex flex-col items-center justify-center relative overflow-hidden py-12 z-10"
+          >
+            <div ref={awardsFloatingRef} className="absolute inset-0">
+              <div className="absolute top-20 left-20 w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 opacity-20 rotate-45 rounded-sm"></div>
+              <div className="absolute top-40 right-32 w-6 h-6 bg-gradient-to-r from-pink-500 to-red-500 opacity-25 rounded-full"></div>
+              <div className="absolute bottom-32 left-1/4 w-10 h-10 bg-gradient-to-r from-cyan-500 to-blue-500 opacity-15 rotate-45 rounded-sm"></div>
+              <div className="absolute top-1/3 right-1/5 w-7 h-7 bg-gradient-to-r from-purple-500 to-pink-500 opacity-20 rounded-full"></div>
+              <div className="absolute bottom-1/4 right-1/3 w-5 h-5 bg-gradient-to-r from-yellow-500 to-orange-500 opacity-30 rotate-45 rounded-sm"></div>
+              <div className="absolute top-3/4 left-1/6 w-9 h-9 bg-gradient-to-r from-green-500 to-blue-500 opacity-18 rounded-full"></div>
+              <div className="absolute top-1/4 left-1/2 w-4 h-4 bg-gradient-to-r from-indigo-500 to-purple-500 opacity-25 rotate-45 rounded-sm"></div>
+              <div className="absolute bottom-1/3 right-1/4 w-6 h-6 bg-gradient-to-r from-red-500 to-pink-500 opacity-22 rounded-full"></div>
+            </div>
+
+            <div className="relative z-20 max-w-6xl mx-auto px-6 text-center">
+              <h2
+                id="awards-header"
+                className="text-4xl md:text-5xl font-extrabold mb-4 text-black bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 tracking-tight"
+              >
+                AWARDS & CERTIFICATION
+              </h2>
+              <div
+                id="awards-underline"
+                className="w-24 h-1 bg-gradient-to-r from-blue-600 to-purple-600 mx-auto mb-6 rounded-full shadow-lg"
+                style={{ transformOrigin: "center" }}
+              ></div>
+              <p
+                id="awards-desc"
+                className="text-lg md:text-xl text-center max-w-4xl mb-12 text-gray-700 leading-relaxed font-medium"
+              >
+                For maintaining and following the international standard
+                production process and delivering the best quality products and
+                services, Ritzy Group has earned recognition from prestigious
+                national & international governing bodies.
+              </p>
+            </div>
+
+            <div className="w-full overflow-hidden relative z-20">
+              <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-white to-transparent z-30"></div>
+              <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-white to-transparent z-30"></div>
+              <div
+                className="flex items-center gap-12 animate-scroll-infinite py-8"
+                style={{ minWidth: "2400px" }}
+              >
+                <img
+                  src="https://www.ritzygroupbd.com/storage/gallery/08-2019/accord_gallery_image_1565208699.jpeg"
+                  alt="Award 1"
+                  className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
+                />
+                <img
+                  src="https://www.ritzygroupbd.com/storage/gallery/08-2019/alliance_gallery_image_1565208720.jpeg"
+                  alt="Award 2"
+                  className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
+                />
+                <img
+                  src="https://www.ritzygroupbd.com/storage/gallery/08-2019/ctpat_gallery_image_1565208739.jpeg"
+                  alt="Award 3"
+                  className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
+                />
+                <img
+                  src="https://www.ritzygroupbd.com/storage/gallery/08-2019/higg_index_gallery_image_1565208787.jpeg"
+                  alt="Award 4"
+                  className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
+                />
+                <img
+                  src="https://www.ritzygroupbd.com/storage/gallery/08-2019/oeko-tex_gallery_image_1565208839.jpeg"
+                  alt="Award 5"
+                  className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
+                />
+                <img
+                  src="https://www.ritzygroupbd.com/storage/gallery/08-2019/scan_gallery_image_1565208865.jpeg"
+                  alt="Award 6"
+                  className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
+                />
+                <img
+                  src="https://www.ritzygroupbd.com/storage/gallery/08-2019/sedex_smeta_gallery_image_1565208886.jpeg"
+                  alt="Award 7"
+                  className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
+                />
+                <img
+                  src="https://www.ritzygroupbd.com/storage/gallery/08-2019/wrap_certification_gallery_image_1565208911.jpeg"
+                  alt="Award 8"
+                  className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
+                />
+                {/* duplicate set */}
+                <img
+                  src="https://www.ritzygroupbd.com/storage/gallery/08-2019/accord_gallery_image_1565208699.jpeg"
+                  alt="Award 1"
+                  className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
+                />
+                <img
+                  src="https://www.ritzygroupbd.com/storage/gallery/08-2019/alliance_gallery_image_1565208720.jpeg"
+                  alt="Award 2"
+                  className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
+                />
+                <img
+                  src="https://www.ritzygroupbd.com/storage/gallery/08-2019/ctpat_gallery_image_1565208739.jpeg"
+                  alt="Award 3"
+                  className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
+                />
+                <img
+                  src="https://www.ritzygroupbd.com/storage/gallery/08-2019/higg_index_gallery_image_1565208787.jpeg"
+                  alt="Award 4"
+                  className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
+                />
+                <img
+                  src="https://www.ritzygroupbd.com/storage/gallery/08-2019/oeko-tex_gallery_image_1565208839.jpeg"
+                  alt="Award 5"
+                  className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
+                />
+                <img
+                  src="https://www.ritzygroupbd.com/storage/gallery/08-2019/scan_gallery_image_1565208865.jpeg"
+                  alt="Award 6"
+                  className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
+                />
+                <img
+                  src="https://www.ritzygroupbd.com/storage/gallery/08-2019/sedex_smeta_gallery_image_1565208886.jpeg"
+                  alt="Award 7"
+                  className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
+                />
+                <img
+                  src="https://www.ritzygroupbd.com/storage/gallery/08-2019/wrap_certification_gallery_image_1565208911.jpeg"
+                  alt="Award 8"
+                  className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div
+            ref={mapInner}
+            className="absolute inset-0 flex items-center justify-center z-0 pointer-events-none opacity-0"
+          >
+            <div className="absolute inset-0 z-0">
+              <img
+                ref={mapImgRef}
+                src="/world.svg"
+                alt="World Map"
+                className="w-full h-full object-cover select-none pointer-events-none"
+                draggable={false}
+                style={{ transformOrigin: "50% 50%", willChange: "transform" }}
+              />
+            </div>
+
+            <div
+              ref={mapContentRef}
+              className="relative z-10 flex flex-col items-center justify-center px-4"
+              style={{ opacity: 0 }}
+            >
+              <h2 className="text-3xl md:text-5xl font-extrabold text-center mb-4 text-black drop-shadow-lg">
+                Our Reach, Your Convenience
+              </h2>
+              <p className="text-base md:text-xl text-center max-w-2xl mb-8 text-gray-700 font-medium">
+                Wherever you are, our trusted services are never far away. With
+                a growing network of trained professionals across major cities
+                and local zones, we bring expert support right to your doorstep.
+              </p>
+              <button className="relative group text-lg md:text-xl font-semibold text-black flex items-center focus:outline-none bg-transparent border-none">
+                Explore our services
+                <span className="ml-2 text-2xl transition-transform group-hover:translate-x-1">
+                  &#8594;
+                </span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <style jsx>{`
+          @keyframes scroll-infinite {
+            0% {
+              transform: translateX(0);
+            }
+            100% {
+              transform: translateX(-50%);
+            }
           }
-          100% {
-            transform: translateX(-50%);
+
+          .animate-scroll-infinite {
+            animation: scroll-infinite 20s linear infinite;
           }
-        }
 
-        .animate-scroll-infinite {
-          animation: scroll-infinite 20s linear infinite;
-        }
-
-        button.group {
-          position: relative;
-          padding-bottom: 8px;
-          background: none;
-          border: none;
-          cursor: pointer;
-          color: #111;
-        }
-        button.group span[role="presentation"] {
-          pointer-events: none;
-        }
-      `}</style>
+          button.group {
+            position: relative;
+            padding-bottom: 8px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #111;
+          }
+          button.group span[role="presentation"] {
+            pointer-events: none;
+          }
+        `}</style>
+      </LenisProvider>
     </>
   );
 }
