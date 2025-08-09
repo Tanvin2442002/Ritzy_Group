@@ -25,6 +25,7 @@ export default function Home() {
   const awardsInner = useRef<HTMLDivElement | null>(null);
   const mapInner = useRef<HTMLDivElement | null>(null); 
   const mapContentRef = useRef<HTMLDivElement | null>(null); 
+  const worldMapRef = useRef<HTMLImageElement | null>(null); 
 
   useEffect(() => {
     setMounted(true);
@@ -144,30 +145,42 @@ export default function Home() {
 
   useEffect(() => {
     if (!mounted) return;
-    if (!awardsMapWrapper.current || !awardsInner.current || !mapInner.current || !mapContentRef.current) return;
+    if (!awardsMapWrapper.current || !awardsInner.current || !mapInner.current || !mapContentRef.current || !worldMapRef.current) return;
 
-    const awardsDur = 2.5; 
-    const mapDur = 2.5; 
-    const totalDur = awardsDur + mapDur;
-    const mapContentThreshold = 0.3; 
+    const awardsDur = 1.5; 
+    const mapDur = 1.5; 
+    const zoomDur = 4.0;
+    const totalDur = awardsDur + mapDur + zoomDur;
+    const mapContentThreshold = 0.2; 
 
     gsap.set(mapInner.current, { opacity: 0, pointerEvents: "none" });
     gsap.set(mapContentRef.current, { opacity: 0, pointerEvents: "none" });
     gsap.set(awardsInner.current, { opacity: 1, pointerEvents: "auto" });
+    gsap.set(worldMapRef.current, { 
+      scale: 1, 
+      transformOrigin: "65% 45%",
+      force3D: true,
+      willChange: "transform"
+    });
 
-    const mapStartOffset = awardsDur;
+    const mapStartOffset = awardsDur * 0.7;
     const mapContentStart = mapStartOffset + mapDur * mapContentThreshold;
     const mapContentDur = mapDur * (1 - mapContentThreshold);
+    const zoomStart = mapStartOffset + mapDur * 0.5;
+    const fadeOutStart = zoomStart + zoomDur * 0.3;
 
-    const scrollDistancePercent = totalDur * 80; 
+    const scrollDistancePercent = totalDur * 120; 
 
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: awardsMapWrapper.current,
         start: "top top",
         end: `+=${scrollDistancePercent}%`,
-        scrub: true,
+        scrub: 0.3,
         pin: true,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+        refreshPriority: -1,
       },
     });
 
@@ -176,7 +189,7 @@ export default function Home() {
       {
         opacity: 0,
         duration: awardsDur,
-        ease: "power1.out",
+        ease: "none",
         onComplete: () => {
           if (awardsInner.current) awardsInner.current.style.pointerEvents = "none";
         },
@@ -189,7 +202,7 @@ export default function Home() {
       {
         opacity: 1,
         duration: mapDur,
-        ease: "power1.out",
+        ease: "none",
         onStart: () => {
           if (mapInner.current) mapInner.current.style.pointerEvents = "none";
         },
@@ -205,12 +218,37 @@ export default function Home() {
       {
         opacity: 1,
         duration: mapContentDur,
-        ease: "none", 
+        ease: "power1.inOut",
         onStart: () => {
           if (mapContentRef.current) mapContentRef.current.style.pointerEvents = "auto";
         },
       },
       mapContentStart
+    );
+
+    // Zoom in on Bangladesh/Asia region
+    tl.to(
+      worldMapRef.current!,
+      {
+        scale: 150,
+        duration: zoomDur,
+        ease: "none",
+        transformOrigin: "52.5% 58%",
+        force3D: true,
+        willChange: "transform",
+      },
+      zoomStart
+    );
+
+    // Fade out map content while zooming
+    tl.to(
+      mapContentRef.current!,
+      {
+        opacity: 0,
+        duration: zoomDur,
+        ease: "power1.in",
+      },
+      fadeOutStart
     );
 
     return () => {
@@ -447,14 +485,23 @@ export default function Home() {
 
         <div
           ref={mapInner}
-          className="absolute inset-0 flex items-center justify-center z-0 pointer-events-none opacity-0"
+          className="absolute inset-0 flex items-center bg-blue-200 justify-center z-0 pointer-events-none opacity-0"
+          style={{ willChange: "transform" }}
         >
-          <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 z-0" style={{ willChange: "transform" }}>
             <img
+              ref={worldMapRef}
               src="/world.svg"
               alt="World Map"
-              className="w-full h-full object-cover select-none pointer-events-none"
+              className="w-screen h-screen object-left-bottom select-none pointer-events-none"
               draggable={false}
+              style={{ 
+                willChange: "transform",
+                imageRendering: "auto",
+                transform: "translateZ(0)",
+                backfaceVisibility: "hidden",
+                vectorEffect: "non-scaling-stroke"
+              }}
             />
           </div>
 
@@ -478,6 +525,15 @@ export default function Home() {
               </span>
             </button>
           </div>
+        </div>
+      </section>
+
+      {/* ---------- OUR FACILITIES SECTION ---------- */}
+      <section className="relative w-full min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-4xl md:text-6xl font-extrabold text-black">
+            Our Facilities
+          </h2>
         </div>
       </section>
 
@@ -505,6 +561,48 @@ export default function Home() {
         }
         button.group span[role="presentation"] {
           pointer-events: none;
+        }
+
+        /* SVG and performance optimizations */
+        img[src$=".svg"] {
+          image-rendering: auto;
+          image-rendering: -webkit-optimize-contrast;
+          image-rendering: optimize-quality;
+          transform: translateZ(0);
+          backface-visibility: hidden;
+          perspective: 1000px;
+          vector-effect: non-scaling-stroke;
+        }
+
+        /* Ensure SVG scaling quality */
+        svg, img[src$=".svg"] {
+          shape-rendering: geometricPrecision;
+          text-rendering: geometricPrecision;
+          image-rendering: optimizeQuality;
+          color-rendering: optimizeQuality;
+        }
+
+        /* Hardware acceleration for smooth transforms */
+        .will-change-transform {
+          will-change: transform;
+          transform: translateZ(0);
+          backface-visibility: hidden;
+        }
+
+        /* Optimize scrolling performance */
+        * {
+          scroll-behavior: auto;
+        }
+
+        body {
+          overscroll-behavior: none;
+          transform: translateZ(0);
+        }
+
+        /* Force GPU acceleration on containers */
+        section {
+          transform: translateZ(0);
+          backface-visibility: hidden;
         }
       `}</style>
     </>
