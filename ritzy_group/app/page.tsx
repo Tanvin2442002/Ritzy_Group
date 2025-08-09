@@ -156,12 +156,7 @@ export default function Home() {
     gsap.set(mapInner.current, { opacity: 0, pointerEvents: "none" });
     gsap.set(mapContentRef.current, { opacity: 0, pointerEvents: "none" });
     gsap.set(awardsInner.current, { opacity: 1, pointerEvents: "auto" });
-    gsap.set(worldMapRef.current, { 
-      scale: 1, 
-      transformOrigin: "65% 45%",
-      force3D: true,
-      willChange: "transform"
-    });
+    gsap.set(worldMapRef.current, { scale: 1, transformOrigin: "65% 45%" });
 
     const mapStartOffset = awardsDur * 0.7;
     const mapContentStart = mapStartOffset + mapDur * mapContentThreshold;
@@ -176,11 +171,9 @@ export default function Home() {
         trigger: awardsMapWrapper.current,
         start: "top top",
         end: `+=${scrollDistancePercent}%`,
-        scrub: 0.3,
+        scrub: 0.5,
         pin: true,
         anticipatePin: 1,
-        invalidateOnRefresh: true,
-        refreshPriority: -1,
       },
     });
 
@@ -232,10 +225,8 @@ export default function Home() {
       {
         scale: 150,
         duration: zoomDur,
-        ease: "none",
+        ease: "power2.inOut",
         transformOrigin: "52.5% 58%",
-        force3D: true,
-        willChange: "transform",
       },
       zoomStart
     );
@@ -486,22 +477,15 @@ export default function Home() {
         <div
           ref={mapInner}
           className="absolute inset-0 flex items-center bg-blue-200 justify-center z-0 pointer-events-none opacity-0"
-          style={{ willChange: "transform" }}
         >
-          <div className="absolute inset-0 z-0" style={{ willChange: "transform" }}>
+          <div className="absolute inset-0 z-0">
             <img
               ref={worldMapRef}
               src="/world.svg"
               alt="World Map"
               className="w-screen h-screen object-left-bottom select-none pointer-events-none"
               draggable={false}
-              style={{ 
-                willChange: "transform",
-                imageRendering: "auto",
-                transform: "translateZ(0)",
-                backfaceVisibility: "hidden",
-                vectorEffect: "non-scaling-stroke"
-              }}
+              style={{ willChange: "transform" }}
             />
           </div>
 
@@ -561,48 +545,6 @@ export default function Home() {
         }
         button.group span[role="presentation"] {
           pointer-events: none;
-        }
-
-        /* SVG and performance optimizations */
-        img[src$=".svg"] {
-          image-rendering: auto;
-          image-rendering: -webkit-optimize-contrast;
-          image-rendering: optimize-quality;
-          transform: translateZ(0);
-          backface-visibility: hidden;
-          perspective: 1000px;
-          vector-effect: non-scaling-stroke;
-        }
-
-        /* Ensure SVG scaling quality */
-        svg, img[src$=".svg"] {
-          shape-rendering: geometricPrecision;
-          text-rendering: geometricPrecision;
-          image-rendering: optimizeQuality;
-          color-rendering: optimizeQuality;
-        }
-
-        /* Hardware acceleration for smooth transforms */
-        .will-change-transform {
-          will-change: transform;
-          transform: translateZ(0);
-          backface-visibility: hidden;
-        }
-
-        /* Optimize scrolling performance */
-        * {
-          scroll-behavior: auto;
-        }
-
-        body {
-          overscroll-behavior: none;
-          transform: translateZ(0);
-        }
-
-        /* Force GPU acceleration on containers */
-        section {
-          transform: translateZ(0);
-          backface-visibility: hidden;
         }
       `}</style>
     </>
