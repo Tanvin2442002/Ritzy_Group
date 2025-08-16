@@ -3,6 +3,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { Navbar } from "../components/navbar";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import LenisProvider from "../components/lenisProvider";
+import Map from "../components/map";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -23,9 +25,9 @@ export default function Home() {
 
   const awardsMapWrapper = useRef<HTMLDivElement | null>(null);
   const awardsInner = useRef<HTMLDivElement | null>(null);
-  const mapInner = useRef<HTMLDivElement | null>(null); 
-  const mapContentRef = useRef<HTMLDivElement | null>(null); 
-  const worldMapRef = useRef<HTMLImageElement | null>(null); 
+  const mapInner = useRef<HTMLDivElement | null>(null);
+  const mapContentRef = useRef<HTMLDivElement | null>(null);
+  const svgRef = useRef<SVGSVGElement | null>(null); // Add this new ref for the SVG
 
   useEffect(() => {
     setMounted(true);
@@ -145,108 +147,145 @@ export default function Home() {
 
   useEffect(() => {
     if (!mounted) return;
-    if (!awardsMapWrapper.current || !awardsInner.current || !mapInner.current || !mapContentRef.current || !worldMapRef.current) return;
+    if (
+      !awardsMapWrapper.current ||
+      !awardsInner.current ||
+      !mapInner.current ||
+      !mapContentRef.current ||
+      !svgRef.current
+    )
+      return;
 
-    const awardsDur = 1.5; 
-    const mapDur = 1.5; 
-    const zoomDur = 4.0;
-    const totalDur = awardsDur + mapDur + zoomDur;
-    const mapContentThreshold = 0.2; 
-
-    gsap.set(mapInner.current, { opacity: 0, pointerEvents: "none" });
-    gsap.set(mapContentRef.current, { opacity: 0, pointerEvents: "none" });
-    gsap.set(awardsInner.current, { opacity: 1, pointerEvents: "auto" });
-    gsap.set(worldMapRef.current, { scale: 1, transformOrigin: "65% 45%" });
-
-    const mapStartOffset = awardsDur * 0.7;
-    const mapContentStart = mapStartOffset + mapDur * mapContentThreshold;
-    const mapContentDur = mapDur * (1 - mapContentThreshold);
-    const zoomStart = mapStartOffset + mapDur * 0.5;
-    const fadeOutStart = zoomStart + zoomDur * 0.3;
-
-    const scrollDistancePercent = totalDur * 120; 
+    gsap.set(mapInner.current, { 
+      opacity: 0, 
+      pointerEvents: "none"
+    });
+    gsap.set(mapContentRef.current, { 
+      opacity: 0, 
+      pointerEvents: "none" 
+    });
+    gsap.set(awardsInner.current, { 
+      opacity: 1, 
+      pointerEvents: "auto" 
+    });
+    gsap.set(svgRef.current, { 
+      scale: 1, 
+      transformOrigin: "center center"
+    });
 
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: awardsMapWrapper.current,
         start: "top top",
-        end: `+=${scrollDistancePercent}%`,
-        scrub: 0.5,
+        end: "+=400%",
+        scrub: 1.2,
         pin: true,
         anticipatePin: 1,
+        refreshPriority: 1,
+        onUpdate: (self) => {
+          console.log("ScrollTrigger progress:", self.progress, "direction:", self.direction);
+          
+          // Better pointer event management
+          if (self.progress < 0.3) {
+            gsap.set(mapInner.current, { pointerEvents: "none" });
+            gsap.set(awardsInner.current, { pointerEvents: "auto" });
+          } else if (self.progress > 0.7) {
+            gsap.set(awardsInner.current, { pointerEvents: "none" });
+            gsap.set(mapInner.current, { pointerEvents: "auto" });
+          }
+        }
       },
     });
 
-    tl.to(
-      awardsInner.current!,
-      {
-        opacity: 0,
-        duration: awardsDur,
-        ease: "none",
-        onComplete: () => {
-          if (awardsInner.current) awardsInner.current.style.pointerEvents = "none";
-        },
-      },
-      0
-    );
+    
+    tl.to(awardsInner.current, {
+      opacity: 0,
+      duration: 2,
+      ease: "power2.inOut",
+    }, 0);
 
-    tl.to(
-      mapInner.current!,
-      {
-        opacity: 1,
-        duration: mapDur,
-        ease: "none",
-        onStart: () => {
-          if (mapInner.current) mapInner.current.style.pointerEvents = "none";
-        },
-        onComplete: () => {
-          if (mapInner.current) mapInner.current.style.pointerEvents = "auto";
-        },
-      },
-      mapStartOffset
-    );
+    tl.to(mapInner.current, {
+      opacity: 1,
+      duration: 2,
+      ease: "power2.inOut",
+    }, 1);
 
-    tl.to(
-      mapContentRef.current!,
-      {
-        opacity: 1,
-        duration: mapContentDur,
-        ease: "power1.inOut",
-        onStart: () => {
-          if (mapContentRef.current) mapContentRef.current.style.pointerEvents = "auto";
-        },
-      },
-      mapContentStart
-    );
+    tl.to(mapContentRef.current, {
+      opacity: 1,
+      duration: 1.5,
+      ease: "power2.inOut",
+    }, 2);
 
-    // Zoom in on Bangladesh/Asia region
-    tl.to(
-      worldMapRef.current!,
-      {
-        scale: 150,
-        duration: zoomDur,
-        ease: "power2.inOut",
-        transformOrigin: "52.5% 58%",
+    tl.to(svgRef.current, {
+      scale: 90, 
+      duration: 2.5,
+      ease: "power2.inOut",
+      transformOrigin: "center center", 
+      force3D: true,
+      willChange: "transform",
+      onStart: () => {
+        console.log("Zoom animation started - zooming to center");
       },
-      zoomStart
-    );
+      onComplete: () => {
+        console.log("Zoom animation completed");
+      },
+      onReverseComplete: () => {
+        console.log("Zoom reverse completed - back to scale 1");
+      }
+    }, 3.5);
 
-    // Fade out map content while zooming
-    tl.to(
-      mapContentRef.current!,
-      {
-        opacity: 0,
-        duration: zoomDur,
-        ease: "power1.in",
-      },
-      fadeOutStart
-    );
+    tl.to(mapContentRef.current, {
+      opacity: 0,
+      duration: 1.5,
+      ease: "power2.inOut",
+    }, 4.5);
+
+    tl.to(mapInner.current, {
+      opacity: 0,
+      duration: 1,
+      ease: "power2.inOut",
+    }, 5.5);
+
+    tl.to(awardsInner.current, {
+      opacity: 1,
+      duration: 1,
+      ease: "power2.inOut",
+    }, 6);
 
     return () => {
       try {
         tl.scrollTrigger?.kill();
-      } catch {}
+      } catch (e) {
+        console.log("Error killing ScrollTrigger:", e);
+      }
       tl.kill();
+      
+      if (mapInner.current) {
+        gsap.set(mapInner.current, { 
+          opacity: 0, 
+          pointerEvents: "none",
+          clearProps: "transform"
+        });
+      }
+      if (mapContentRef.current) {
+        gsap.set(mapContentRef.current, { 
+          opacity: 0, 
+          pointerEvents: "none"
+        });
+      }
+      if (awardsInner.current) {
+        gsap.set(awardsInner.current, { 
+          opacity: 1, 
+          pointerEvents: "auto"
+        });
+      }
+      if (svgRef.current) {
+        gsap.set(svgRef.current, { 
+          scale: 1, 
+          transformOrigin: "center center",
+          clearProps: "transform"
+        });
+      }
     };
   }, [mounted]);
 
@@ -255,7 +294,7 @@ export default function Home() {
   };
 
   return (
-    <>
+    <LenisProvider options={{ duration: 1.5, smooth: true }}>
       <Navbar />
 
       <section
@@ -325,14 +364,14 @@ export default function Home() {
               <p className="text-xl md:text-2xl text-gray-700 leading-relaxed font-medium">
                 Ritzy Group is a leading apparel manufacturer from Bangladesh,
                 trusted by global brands for delivering premium knitwear with
-                consistency and care. Since 2005, we've built our reputation on
-                quality craftsmanship, ethical production, and a deep commitment
-                to innovation.
+                consistency and care. Since 2005, we&apos;ve built our
+                reputation on quality craftsmanship, ethical production, and a
+                deep commitment to innovation.
               </p>
               <p className="text-xl md:text-2xl text-gray-700 leading-relaxed font-medium">
                 Our products are crafted in four modern factories by over 8,000
                 personnel, each piece reflecting our dedication to excellence.
-                At Ritzy, we don't just manufacture garments, we shape
+                At Ritzy, we don&apos;t just manufacture garments, we shape
                 experiences, support livelihoods, and power the global fashion
                 supply chain.
               </p>
@@ -356,7 +395,7 @@ export default function Home() {
             <div className="absolute bottom-1/4 right-1/3 w-5 h-5 bg-gradient-to-r from-yellow-500 to-orange-500 opacity-30 rotate-45 rounded-sm"></div>
             <div className="absolute top-3/4 left-1/6 w-9 h-9 bg-gradient-to-r from-green-500 to-blue-500 opacity-18 rounded-full"></div>
             <div className="absolute top-1/4 left-1/2 w-4 h-4 bg-gradient-to-r from-indigo-500 to-purple-500 opacity-25 rotate-45 rounded-sm"></div>
-            <div className="absolute bottom-1/3 right-1/4 w-6 h-6 bg-gradient-to-r from-red-500 to-pink-500 opacity-22 rounded-full"></div>
+            <div className="absolute bottom-1/4 right-1/4 w-6 h-6 bg-gradient-to-r from-red-500 to-pink-500 opacity-22 rounded-full"></div>
           </div>
 
           <div className="relative z-20 max-w-6xl mx-auto px-6 text-center">
@@ -473,37 +512,28 @@ export default function Home() {
             </div>
           </div>
         </div>
-
         <div
           ref={mapInner}
-          className="absolute inset-0 flex items-center bg-blue-200 justify-center z-0 pointer-events-none opacity-0"
+          className="absolute inset-0 bg-white z-0 pointer-events-none opacity-0 overflow-hidden"
         >
-          <div className="absolute inset-0 z-0">
-            <img
-              ref={worldMapRef}
-              src="/world.svg"
-              alt="World Map"
-              className="w-screen h-screen object-left-bottom select-none pointer-events-none"
-              draggable={false}
-              style={{ willChange: "transform" }}
-            />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Map ref={svgRef} className="w-[150vw] h-[150vh]" />
           </div>
-
           <div
             ref={mapContentRef}
-            className="relative z-10 flex flex-col items-center justify-center px-4"
+            className="absolute inset-0 flex flex-col items-center justify-center px-4 z-10"
             style={{ opacity: 0 }}
           >
             <h2 className="text-3xl md:text-5xl font-extrabold text-center mb-4 text-black drop-shadow-lg">
-              Our Reach, Your Convenience
+              Our Reach Across Asia
             </h2>
             <p className="text-base md:text-xl text-center max-w-2xl mb-8 text-gray-700 font-medium">
-              Wherever you are, our trusted services are never far away. With a
-              growing network of trained professionals across major cities and
-              local zones, we bring expert support right to your doorstep.
+              From Bangladesh to the broader Asian market, our trusted network
+              spans across major manufacturing hubs. We bring expert textile
+              production and quality assurance right to your supply chain.
             </p>
             <button className="relative group text-lg md:text-xl font-semibold text-black flex items-center focus:outline-none bg-transparent border-none">
-              Explore our services
+              Explore our facilities
               <span className="ml-2 text-2xl transition-transform group-hover:translate-x-1">
                 &#8594;
               </span>
@@ -547,6 +577,6 @@ export default function Home() {
           pointer-events: none;
         }
       `}</style>
-    </>
+    </LenisProvider>
   );
 }
