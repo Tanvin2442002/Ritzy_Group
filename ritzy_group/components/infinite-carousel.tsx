@@ -151,7 +151,7 @@ export default function InfiniteCarousel({ data }: InfiniteCarouselProps) {
                 }}
               >
                 {/* Use <Image> for backgroundImage to support both public folder and external URLs */}
-                <Image
+                <img
                   src={item.backgroundImage}
                   alt={item.title}
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 cursor-pointer"
@@ -237,9 +237,9 @@ export default function InfiniteCarousel({ data }: InfiniteCarouselProps) {
                 return (
                   <>
                     <div className="relative h-64 overflow-hidden rounded-t-lg">
-                      <Image
+                      <img
                         src={item.expandedImage || "/placeholder.svg"}
-                        alt={item.title}
+                        alt={item.title}   
                         className="w-full h-full object-cover"
                       />
                       <div className="absolute inset-0 bg-black/20" />
