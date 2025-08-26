@@ -129,19 +129,19 @@ export default function TimelineDemo() {
                   </h3>
                   <div className="text-neutral-300 text-sm md:text-base leading-relaxed space-y-4">
                     <p>
-                      Ritzy Group is more than just a company to me, it's a reflection of my vision, my passion, and the
-                      years of dedication that have shaped who I am today. When I started this journey, I wasn't just
+                      Ritzy Group is more than just a company to me, it&apos;s a reflection of my vision, my passion, and the
+                      years of dedication that have shaped who I am today. When I started this journey, I wasn&apos;t just
                       building a business; I was building a platform to create impact for people, for communities, and
                       for the future of Bangladesh.
                     </p>
                     <p>
-                      The road hasn't always been easy. Like many entrepreneurs, I've faced challenges, setbacks, and
+                      The road hasn&apos;t always been easy. Like many entrepreneurs, I&apos;ve faced challenges, setbacks, and
                       moments of uncertainty. But what kept me moving forward was a belief that with the right people,
                       clear purpose, and unwavering determination, we could build something meaningful and lasting.
                     </p>
                     <p>
-                      This company represents more than production lines or export numbers. It's about the thousands of
-                      individuals who come to work each day with purpose and commitment. It's about young professionals
+                      This company represents more than production lines or export numbers. It&apos;s about the thousands of
+                      individuals who come to work each day with purpose and commitment. It&apos;s about young professionals
                       finding their first opportunity, skilled workers supporting their families, and entire communities
                       empowered by the jobs we create.
                     </p>
