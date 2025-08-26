@@ -6,12 +6,6 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-/**
- * LenisProvider
- * - Wrap your page (or layout) with this component so Lenis initializes
- *   before your page's GSAP scroll triggers.
- * - Optional `options` lets you tweak Lenis behavior per page.
- */
 type LenisProviderProps = {
   children: React.ReactNode;
   options?: {
@@ -20,7 +14,7 @@ type LenisProviderProps = {
     smooth?: boolean;
     wheelMultiplier?: number;
     touchMultiplier?: number;
-    [k: string]: any;
+    [k: string]: unknown;
   };
 };
 
@@ -29,7 +23,6 @@ export default function LenisProvider({
   options = {},
 }: LenisProviderProps) {
   useEffect(() => {
-    // Default Lenis options (you can override via props)
     const lenis = new Lenis({
       duration: options.duration ?? 1.2,
       easing:
@@ -42,16 +35,15 @@ export default function LenisProvider({
       ...options,
     });
 
-    // Proxy Lenis to ScrollTrigger so GSAP thinks the page is being scrolled natively
-    const scroller = document.scrollingElement || document.documentElement;
+    // Use a stricter type for scroller
+    const scroller: HTMLElement =
+      (document.scrollingElement as HTMLElement) || document.documentElement;
 
-    ScrollTrigger.scrollerProxy(scroller as any, {
-      scrollTop(value?: number) {
-        if (arguments.length && typeof value === "number") {
-          // If ScrollTrigger asks to set scroll, jump Lenis to that position immediately
+    ScrollTrigger.scrollerProxy(scroller, {
+      scrollTop(value?: number): number {
+        if (typeof value === "number") {
           lenis.scrollTo(value, { immediate: true });
         }
-        // Return current scroll position for ScrollTrigger
         return window.scrollY || document.documentElement.scrollTop;
       },
       getBoundingClientRect() {
@@ -62,16 +54,12 @@ export default function LenisProvider({
           height: window.innerHeight,
         };
       },
-      pinType: (scroller as HTMLElement).style.transform ? "transform" : "fixed",
+      pinType: scroller.style.transform ? "transform" : "fixed",
     });
 
-    // Update ScrollTrigger on Lenis scroll events
-    const onLenisScroll = () => {
-      ScrollTrigger.update();
-    };
+    const onLenisScroll = () => ScrollTrigger.update();
     lenis.on("scroll", onLenisScroll);
 
-    // RAF loop drives Lenis
     let rafId = 0;
     const raf = (t: number) => {
       lenis.raf(t);
@@ -79,21 +67,17 @@ export default function LenisProvider({
     };
     rafId = requestAnimationFrame(raf);
 
-    // Ensure ScrollTrigger recalculates with Lenis proxy
     const onRefresh = () => lenis.raf(performance.now());
     ScrollTrigger.addEventListener("refresh", onRefresh);
     ScrollTrigger.refresh();
 
-    // Cleanup
     return () => {
       ScrollTrigger.removeEventListener("refresh", onRefresh);
       lenis.off("scroll", onLenisScroll);
       cancelAnimationFrame(rafId);
       lenis.destroy();
-      // don't kill ScrollTrigger instances here — they should be destroyed by their owners
     };
   }, [options]);
 
-  // Render children normally — provider doesn't inject DOM wrappers so pinType/fixed transforms behave the same.
   return <>{children}</>;
 }
