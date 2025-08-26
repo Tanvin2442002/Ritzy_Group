@@ -14,6 +14,7 @@ type LenisProviderProps = {
     smooth?: boolean;
     wheelMultiplier?: number;
     touchMultiplier?: number;
+    infinite?: boolean;
     [k: string]: unknown;
   };
 };
