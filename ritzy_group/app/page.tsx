@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
+import Image from "next/image"
 import { Navbar } from "../components/navbar";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -21,7 +22,7 @@ const carouselData = [
     backgroundImage: "/one.jpg",
     expandedImage: "/one.jpg",
     content:
-      "Discover inner peace and tranquility in the beautiful archipelago of Saaristo. Experience mindful moments surrounded by nature's serenity.",
+      "Discover inner peace and tranquility in the beautiful archipelago of Saaristo. Experience mindful moments surrounded by nature&apos;s serenity.",
   },
   {
     id: 2,
@@ -708,83 +709,83 @@ export default function Home() {
               className="flex items-center gap-12 animate-scroll-infinite py-8"
               style={{ minWidth: "2400px" }}
             >
-              <img
+              <Image
                 src="https://www.ritzygroupbd.com/storage/gallery/08-2019/accord_gallery_image_1565208699.jpeg"
                 alt="Award 1"
                 className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
               />
-              <img
+              <Image
                 src="https://www.ritzygroupbd.com/storage/gallery/08-2019/alliance_gallery_image_1565208720.jpeg"
                 alt="Award 2"
                 className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
               />
-              <img
+              <Image
                 src="https://www.ritzygroupbd.com/storage/gallery/08-2019/ctpat_gallery_image_1565208739.jpeg"
                 alt="Award 3"
                 className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
               />
-              <img
+              <Image
                 src="https://www.ritzygroupbd.com/storage/gallery/08-2019/higg_index_gallery_image_1565208787.jpeg"
                 alt="Award 4"
                 className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
               />
-              <img
+              <Image
                 src="https://www.ritzygroupbd.com/storage/gallery/08-2019/oeko-tex_gallery_image_1565208839.jpeg"
                 alt="Award 5"
                 className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
               />
-              <img
+              <Image
                 src="https://www.ritzygroupbd.com/storage/gallery/08-2019/scan_gallery_image_1565208865.jpeg"
                 alt="Award 6"
                 className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
               />
-              <img
+              <Image
                 src="https://www.ritzygroupbd.com/storage/gallery/08-2019/sedex_smeta_gallery_image_1565208886.jpeg"
                 alt="Award 7"
                 className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
               />
-              <img
+              <Image
                 src="https://www.ritzygroupbd.com/storage/gallery/08-2019/wrap_certification_gallery_image_1565208911.jpeg"
                 alt="Award 8"
                 className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
               />
               {/* duplicate set */}
-              <img
+              <Image
                 src="https://www.ritzygroupbd.com/storage/gallery/08-2019/accord_gallery_image_1565208699.jpeg"
                 alt="Award 1"
                 className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
               />
-              <img
+              <Image
                 src="https://www.ritzygroupbd.com/storage/gallery/08-2019/alliance_gallery_image_1565208720.jpeg"
                 alt="Award 2"
                 className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
               />
-              <img
+              <Image
                 src="https://www.ritzygroupbd.com/storage/gallery/08-2019/ctpat_gallery_image_1565208739.jpeg"
                 alt="Award 3"
                 className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
               />
-              <img
+              <Image
                 src="https://www.ritzygroupbd.com/storage/gallery/08-2019/higg_index_gallery_image_1565208787.jpeg"
                 alt="Award 4"
                 className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
               />
-              <img
+              <Image
                 src="https://www.ritzygroupbd.com/storage/gallery/08-2019/oeko-tex_gallery_image_1565208839.jpeg"
                 alt="Award 5"
                 className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
               />
-              <img
+              <Image
                 src="https://www.ritzygroupbd.com/storage/gallery/08-2019/scan_gallery_image_1565208865.jpeg"
                 alt="Award 6"
                 className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
               />
-              <img
+              <Image
                 src="https://www.ritzygroupbd.com/storage/gallery/08-2019/sedex_smeta_gallery_image_1565208886.jpeg"
                 alt="Award 7"
                 className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"
               />
-              <img
+              <Image
                 src="https://www.ritzygroupbd.com/storage/gallery/08-2019/wrap_certification_gallery_image_1565208911.jpeg"
                 alt="Award 8"
                 className="h-40 w-40 object-contain bg-white rounded-xl shadow-lg border hover:shadow-xl transition-all duration-300 hover:scale-105 mx-2"

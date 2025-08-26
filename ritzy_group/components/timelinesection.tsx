@@ -1,4 +1,5 @@
 import { Timeline } from "@/components/ui/timeline"
+import Image from "next/image"
 
 export default function TimelineDemo() {
   const data = [
@@ -11,14 +12,14 @@ export default function TimelineDemo() {
             future growth.
           </p>
           <div className="grid grid-cols-2 gap-4">
-            <img
+            <Image
               src="/chittagong-city-establishment-2005.png"
               alt="Chittagong 2005"
               width={400}
               height={300}
               className="h-20 w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(34,_42,_53,_0.04),_0_0_4px_rgba(34,_42,_53,_0.08),_0_16px_68px_rgba(47,_48,_55,_0.05),_0_1px_0_rgba(255,_255,_255,_0.1)_inset] md:h-44 lg:h-60"
             />
-            <img
+            <Image
               src="/early-business-chittagong.png"
               alt="Early development"
               width={400}
@@ -42,14 +43,14 @@ export default function TimelineDemo() {
             initiatives.
           </p>
           <div className="grid grid-cols-2 gap-4">
-            <img
+            <Image
               src="/chittagong-business-expansion-2008.png"
               alt="2008 expansion"
               width={400}
               height={300}
               className="h-20 w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(34,_42,_53,_0.04),_0_0_4px_rgba(34,_42,_53,_0.08),_0_16px_68px_rgba(47,_48,_55,_0.05),_0_1px_0_rgba(255,_255,_255,_0.1)_inset] md:h-44 lg:h-60"
             />
-            <img
+            <Image
               src="/chittagong-community-partnerships.png"
               alt="Community partnerships"
               width={400}
@@ -82,14 +83,14 @@ export default function TimelineDemo() {
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <img
+            <Image
               src="/chittagong-achievements-2011.png"
               alt="2011 achievements"
               width={400}
               height={300}
               className="h-20 w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(34,_42,_53,_0.04),_0_0_4px_rgba(34,_42,_53,_0.08),_0_16px_68px_rgba(47,_48,_55,_0.05),_0_1px_0_rgba(255,_255,_255,_0.1)_inset] md:h-44 lg:h-60"
             />
-            <img
+            <Image
               src="/chittagong-innovation.png"
               alt="Innovation projects"
               width={400}
@@ -114,7 +115,7 @@ export default function TimelineDemo() {
             <div className="bg-neutral-900 border border-neutral-700 rounded-lg p-8 shadow-lg">
               <div className="flex flex-col md:flex-row gap-8 items-center">
                 <div className="flex-shrink-0">
-                  <img
+                  <Image
                     src="https://www.ritzygroupbd.com/storage/pages/12-2020/message-from-md_header_image_1607163272.jpeg"
                     alt="Mirza Md. Jamshed Ali - Managing Director"
                     width={300}
@@ -165,7 +166,7 @@ export default function TimelineDemo() {
             <div className="bg-neutral-900 border border-neutral-700 rounded-lg p-8 shadow-lg">
               <div className="flex flex-col md:flex-row gap-8 items-center">
                 <div className="flex-shrink-0">
-                  <img
+                  <Image
                     src="/mission-vision-values.png"
                     alt="Ritzy Group Mission and Vision"
                     width={300}

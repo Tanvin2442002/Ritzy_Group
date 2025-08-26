@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { ChevronLeft, ChevronRight, X } from "lucide-react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 
@@ -149,8 +150,8 @@ export default function InfiniteCarousel({ data }: InfiniteCarouselProps) {
                   expandCard(item.id)
                 }}
               >
-                {/* Use <img> for backgroundImage to support both public folder and external URLs */}
-                <img
+                {/* Use <Image> for backgroundImage to support both public folder and external URLs */}
+                <Image
                   src={item.backgroundImage}
                   alt={item.title}
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 cursor-pointer"
@@ -236,7 +237,7 @@ export default function InfiniteCarousel({ data }: InfiniteCarouselProps) {
                 return (
                   <>
                     <div className="relative h-64 overflow-hidden rounded-t-lg">
-                      <img
+                      <Image
                         src={item.expandedImage || "/placeholder.svg"}
                         alt={item.title}
                         className="w-full h-full object-cover"

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-
+import Image from "next/image"
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 
@@ -64,7 +64,7 @@ export function Navbar() {
             {/* Logo */}
             <div className="flex-shrink-0">
               <Link href="/">
-                <img
+                <Image
                   src="https://www.ritzygroupbd.com/storage/global/07-08-2019/site_logo1565199280.png"
                   alt="Logo"
                   className="h-15 py-2 w-auto cursor-pointer"
