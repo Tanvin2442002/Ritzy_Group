@@ -12,7 +12,14 @@
 }
 @import "tailwindcss";
 html, body {
+  /* height: 100%; */
   overflow-x: hidden;
+  font-family: var(--font-spectral), serif;
+  /* overflow-y: hidden; */
+}
+
+body {
+  overflow-y: hidden;
 }
 
 :root {

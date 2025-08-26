@@ -3,9 +3,10 @@ import React, { forwardRef } from "react";
 
 interface MapProps {
   className?: string;
+  style?: React.CSSProperties;
 }
 
-const Map = forwardRef<SVGSVGElement, MapProps>(({ className = "" }, ref) => {
+const Map = forwardRef<SVGSVGElement, MapProps>(({ className = "" , style = {} }, ref) => {
   return (
     <svg
       ref={ref}
@@ -21,9 +22,9 @@ const Map = forwardRef<SVGSVGElement, MapProps>(({ className = "" }, ref) => {
       style={{
         shapeRendering: "geometricPrecision",
         imageRendering: "crisp-edges",
-        width: "100%",
-        height: "100%",
+        ...style,
       }}
+      preserveAspectRatio="xMidYMid meet"
     >
       <g id="map-container">
         <path
